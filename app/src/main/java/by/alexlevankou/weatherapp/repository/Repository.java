@@ -12,11 +12,22 @@ import retrofit2.Response;
 public class Repository {
 
     public LiveData<WeatherData> getWeather(double latitude, double longitude) {
-        String format = "lat=%.0f&lon=%.0f";
-        String query = String.format(format,latitude,longitude);
         final MutableLiveData<WeatherData> data = new MutableLiveData<>();
-        call(data, query);
+        callLocation(data, latitude, longitude);
         return data;
+    }
+
+    private void callLocation(final MutableLiveData<WeatherData> data, double latitude, double longitude) {
+        ApiFactory.getWeatherService().getWeatherByLocation(latitude, longitude).enqueue(new Callback<WeatherData>() {
+            @Override
+            public void onResponse(Call<WeatherData> call, Response<WeatherData> response) {
+                data.setValue(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<WeatherData> call, Throwable t) {
+            }
+        });
     }
 
     private void call(final MutableLiveData<WeatherData> data, String query) {

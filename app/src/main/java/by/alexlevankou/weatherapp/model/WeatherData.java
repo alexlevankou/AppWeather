@@ -11,6 +11,10 @@ import java.util.List;
 
 public class WeatherData implements Serializable {
 
+
+    @SerializedName("id")
+    private int mId;
+
     @SerializedName("name")
     private String mName;
 

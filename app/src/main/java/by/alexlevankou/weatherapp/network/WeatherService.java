@@ -12,7 +12,7 @@ public interface WeatherService {
     @GET("data/2.5/weather?units=metric")
     Call<WeatherData> getWeather(@NonNull @Query("q") String query);
 
-    @GET("data/2.5/weather?lat={lat}&lon={lon}")
-    Call<WeatherData> getWeatherByLocation(@Path("lat") float lat, @Path("lon") float lon);
+    @GET("data/2.5/weather?")
+    Call<WeatherData> getWeatherByLocation(@Query("lat") double lat, @Query("lon") double lon);
 
 }
