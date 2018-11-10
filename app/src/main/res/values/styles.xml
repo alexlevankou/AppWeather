@@ -8,4 +8,32 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="SunTheme" parent="Theme.AppCompat">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorSunPrimary</item>
+        <item name="colorPrimaryDark">@color/colorSunPrimaryDark</item>
+        <item name="colorAccent">@color/colorSunAccent</item>
+    </style>
+
+    <style name="CloudTheme" parent="Theme.AppCompat">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorCloudPrimary</item>
+        <item name="colorPrimaryDark">@color/colorCloudPrimaryDark</item>
+        <item name="colorAccent">@color/colorCloudAccent</item>
+    </style>
+
+    <style name="RainTheme" parent="Theme.AppCompat">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorRainPrimary</item>
+        <item name="colorPrimaryDark">@color/colorRainPrimaryDark</item>
+        <item name="colorAccent">@color/colorRainAccent</item>
+    </style>
+
+    <style name="SnowTheme" parent="Theme.AppCompat">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorSnowPrimary</item>
+        <item name="colorPrimaryDark">@color/colorSnowPrimaryDark</item>
+        <item name="colorAccent">@color/colorSnowAccent</item>
+    </style>
+
 </resources>

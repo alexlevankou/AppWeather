@@ -3,4 +3,20 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+
+    <color name="colorSunPrimary">#fffb86</color>
+    <color name="colorSunPrimaryDark">#cac52b</color>
+    <color name="colorSunAccent">#511bd8</color>
+
+    <color name="colorCloudPrimary">#64b7ff</color>
+    <color name="colorCloudPrimaryDark">#4584ba</color>
+    <color name="colorCloudAccent">#ffe81b</color>
+
+    <color name="colorRainPrimary">#0d0f7e</color>
+    <color name="colorRainPrimaryDark">#000248</color>
+    <color name="colorRainAccent">#ff0400</color>
+
+    <color name="colorSnowPrimary">#cacbe6</color>
+    <color name="colorSnowPrimaryDark">#bbbbbf</color>
+    <color name="colorSnowAccent">#0e8311</color>
 </resources>
