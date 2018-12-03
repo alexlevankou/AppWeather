@@ -14,6 +14,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import by.alexlevankou.weatherapp.R;
 import by.alexlevankou.weatherapp.model.WeatherData;
@@ -25,14 +27,29 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private LocationManager mLocationManager = null;
     private Location mLocation;
     private WeatherViewModel mViewModel;
-    //private GPSTracker gpsTrackerService;
+    //private GPSTrackerTrackerService;
+
+    private TextView city;
+    private ImageView weatherImage;
+    private TextView temperature;
+    private TextView pressure;
+    private TextView humidity;
+    private TextView windSpeed;
 
     static final int REQUEST_CODE_PERMISSION_ACCESS_LOCATION = 0;
+    static final int CELSIUS_ZERO_IN_KELVIN = 273;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        city = findViewById(R.id.city_name);
+        weatherImage = findViewById(R.id.weatherImage);
+        temperature = findViewById(R.id.temperature_value);
+        pressure = findViewById(R.id.pressure_value);
+        humidity = findViewById(R.id.humidity_value);
+        windSpeed = findViewById(R.id.wind_speed_value);
 
         mViewModel = ViewModelProviders.of(this).get(WeatherViewModel.class);
         mViewModel.init();
@@ -89,7 +106,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         mViewModel.getWeatherByCoordinates(mLocation.getLatitude(), mLocation.getLongitude()).observe(this, new Observer<WeatherData>() {
             @Override
             public void onChanged(@Nullable WeatherData weatherData) {
-                int z = 9;
+
+                if(weatherData != null)
+                {
+                    city.setText(weatherData.getName());
+                    temperature.setText(String.format(getResources().getString(R.string.degree_celsius), weatherData.getMain().getTemp() - CELSIUS_ZERO_IN_KELVIN));
+
+                    pressure.setText(String.format(getResources().getString(R.string.pressure_value), weatherData.getMain().getPressure()));
+                    humidity.setText(String.format(getResources().getString(R.string.percentage), weatherData.getMain().getHumidity()));
+                    windSpeed.setText(String.format(getResources().getString(R.string.speed), weatherData.getWind().getSpeed()));
+                }
             }
         });
     }

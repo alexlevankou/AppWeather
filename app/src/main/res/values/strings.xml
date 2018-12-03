@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">WeatherApp</string>
+
+    <string name="pressure">Давление</string>
+    <string name="humidity">Влажность</string>
+    <string name="wind">Ветер</string>
+
+    <string name="degree_celsius">%d °C</string>
+    <string name="pressure_value">%d Pa</string>
+    <string name="percentage">%d %%</string>
+    <string name="speed">%d m/s</string>
 </resources>
