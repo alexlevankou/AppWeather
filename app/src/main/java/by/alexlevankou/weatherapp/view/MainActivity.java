@@ -17,12 +17,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import by.alexlevankou.weatherapp.R;
 import by.alexlevankou.weatherapp.model.WeatherData;
 import by.alexlevankou.weatherapp.viewmodel.WeatherViewModel;
 
 
-public class MainActivity extends AppCompatActivity implements LocationListener{
+public class MainActivity extends AppCompatActivity implements LocationListener {
 
     private LocationManager mLocationManager = null;
     private Location mLocation;
@@ -36,8 +39,36 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private TextView humidity;
     private TextView windSpeed;
 
-    static final int REQUEST_CODE_PERMISSION_ACCESS_LOCATION = 0;
-    static final int CELSIUS_ZERO_IN_KELVIN = 273;
+    private static final Map<String, Integer> imageMap = createImageMap();
+
+    private static final int REQUEST_CODE_PERMISSION_ACCESS_LOCATION = 0;
+    private static final int CELSIUS_ZERO_IN_KELVIN = 273;
+
+    private static Map<String, Integer> createImageMap()
+    {
+        Map<String,Integer> imageMap = new HashMap<String,Integer>();
+        // day
+        imageMap.put("01d", R.mipmap.i01d);
+        imageMap.put("02d", R.mipmap.i02d);
+        imageMap.put("03d", R.mipmap.i03d);
+        imageMap.put("04d", R.mipmap.i04d);
+        imageMap.put("09d", R.mipmap.i09d);
+        imageMap.put("10d", R.mipmap.i10d);
+        imageMap.put("11d", R.mipmap.i11d);
+        imageMap.put("13d", R.mipmap.i13d);
+        imageMap.put("50d", R.mipmap.i50d);
+        // night
+        imageMap.put("01n", R.mipmap.i01n);
+        imageMap.put("02n", R.mipmap.i02n);
+        imageMap.put("03n", R.mipmap.i03d);
+        imageMap.put("04n", R.mipmap.i04d);
+        imageMap.put("09n", R.mipmap.i09d);
+        imageMap.put("10n", R.mipmap.i10n);
+        imageMap.put("11n", R.mipmap.i11d);
+        imageMap.put("13n", R.mipmap.i13d);
+        imageMap.put("50n", R.mipmap.i50d);
+        return imageMap;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,9 +140,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
                 if(weatherData != null)
                 {
-                    city.setText(weatherData.getName());
-                    temperature.setText(String.format(getResources().getString(R.string.degree_celsius), weatherData.getMain().getTemp() - CELSIUS_ZERO_IN_KELVIN));
+                    String imageName = weatherData.getWeather().getIcon();
+                    weatherImage.setImageResource(imageMap.get(imageName));
 
+                    city.setText(weatherData.getName());
+                    int temp = weatherData.getMain().getTemp() - CELSIUS_ZERO_IN_KELVIN;
+                    temperature.setText(String.format(getResources().getString(R.string.degree_celsius), temp));
                     pressure.setText(String.format(getResources().getString(R.string.pressure_value), weatherData.getMain().getPressure()));
                     humidity.setText(String.format(getResources().getString(R.string.percentage), weatherData.getMain().getHumidity()));
                     windSpeed.setText(String.format(getResources().getString(R.string.speed), weatherData.getWind().getSpeed()));

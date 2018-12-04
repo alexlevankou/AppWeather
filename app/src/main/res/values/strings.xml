@@ -5,6 +5,7 @@
     <string name="humidity">Влажность</string>
     <string name="wind">Ветер</string>
 
+    <string name="weather_icon">i%s</string>
     <string name="degree_celsius">%d °C</string>
     <string name="pressure_value">%d Pa</string>
     <string name="percentage">%d %%</string>
