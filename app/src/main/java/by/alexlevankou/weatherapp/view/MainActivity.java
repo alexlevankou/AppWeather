@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -85,31 +86,31 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         mViewModel = ViewModelProviders.of(this).get(WeatherViewModel.class);
         mViewModel.init();
 
-        if (!isPermissionGranted()) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_CODE_PERMISSION_ACCESS_LOCATION);
-            return;
-        }
-        requestLocation();
+        getLocation();
     }
 
-    @SuppressLint("MissingPermission")
+    private void getLocation() {
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            requestLocation();
+        } else {
+            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                Toast.makeText(this, R.string.permission_request, Toast.LENGTH_SHORT).show();
+            }
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_PERMISSION_ACCESS_LOCATION);
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_CODE_PERMISSION_ACCESS_LOCATION:
-                if (grantResults.length >= 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                    requestLocation();
-                } else {
-                    // display no data
-                }
-                break;
-            default:
-                break;
+        if (requestCode == REQUEST_CODE_PERMISSION_ACCESS_LOCATION) {
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getLocation();
+            } else {
+                Toast.makeText(this, R.string.permission_decline, Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
-    }
-
-    private boolean isPermissionGranted() {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     @SuppressLint("MissingPermission")
@@ -126,11 +127,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
     }
 
-    public void onProviderDisabled(String provider) {
-    }
+    @Override
+    public void onProviderDisabled(String provider) {}
 
-    public void onProviderEnabled(String provider) {
-    }
+    @Override
+    public void onProviderEnabled(String provider) {}
 
     public void onLocationChanged(Location location) {
         mLocation = location;
@@ -155,6 +156,5 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     }
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-    }
+    public void onStatusChanged(String provider, int status, Bundle extras) {}
 }

@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">WeatherApp</string>
 
+    <string name="permission_request">Для обновления данных необходим доступ к геолокации</string>
+    <string name="permission_decline">Нет доступа к геолокации</string>
+
     <string name="pressure">Давление</string>
     <string name="humidity">Влажность</string>
     <string name="wind">Ветер</string>
