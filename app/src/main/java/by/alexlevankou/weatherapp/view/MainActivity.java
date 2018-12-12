@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     private Location mLocation;
     private WeatherViewModel mViewModel;
     //private GPSTrackerTrackerService;
+    private SwipeRefreshLayout swipeRefresher;
 
     private TextView city;
     private ImageView weatherImage;
@@ -76,6 +78,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        swipeRefresher = findViewById(R.id.swipeRefresher);
+        swipeRefresher.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getLocation();
+            }
+        });
+        swipeRefresher.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+
         city = findViewById(R.id.city_name);
         weatherImage = findViewById(R.id.weatherImage);
         temperature = findViewById(R.id.temperature_value);
@@ -98,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             }
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_PERMISSION_ACCESS_LOCATION);
         }
+        swipeRefresher.setRefreshing(false);
     }
 
     @Override

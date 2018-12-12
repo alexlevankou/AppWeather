@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipeRefresher"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -39,6 +45,8 @@
         app:layout_constraintTop_toBottomOf="@+id/city_name"
         app:layout_constraintVertical_bias="0.826"
         app:srcCompat="@mipmap/i01d"/>
+
+
 
     <TextView
         android:id="@+id/temperature_value"
@@ -125,3 +133,5 @@
         app:layout_constraintStart_toEndOf="@+id/wind_speed_text"/>
 
 </android.support.constraint.ConstraintLayout>
+
+</android.support.v4.widget.SwipeRefreshLayout>
