@@ -1,7 +1,6 @@
 package by.alexlevankou.weatherapp.service;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -9,45 +8,45 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
-public class GPSTracker extends Service implements LocationListener {
-    private final Context mContext;
+import by.alexlevankou.weatherapp.R;
 
-    // flag for GPS Status
+public class LocationService extends Service implements LocationListener {
+
+    //private final Context mContext;
+    IBinder mBinder;
+
     boolean isGPSEnabled = false;
-
-    // flag for network status
     boolean isNetworkEnabled = false;
+    Location location = null;
 
-    boolean canGetLocation = false;
-
-    double latitude;
-    double longitude;
+    double latitude = 0;
+    double longitude = 0;
 
     // The minimum distance to change updates in metters
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10000;
     // The minimum time beetwen updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 10000;
 
-    public GPSTracker(Context context) {
-        this.mContext = context;
-        getLocation();
+    //public LocationService(Context context) {
+    //    this.mContext = context;
+    //}
+
+    public void getLocation() {
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            requestLocation();
+        }
     }
 
-    @SuppressLint("MissingPermission")
-    public Location getLocation() {
-        Location location = null;
+    public void requestLocation() {
         try {
-            LocationManager locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
+            LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 
-            if(!isPermissionGranted())
-            {
-                return null;
-            }
             if(locationManager != null) {
                 isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
             }
@@ -58,20 +57,15 @@ public class GPSTracker extends Service implements LocationListener {
             if (!isGPSEnabled && !isNetworkEnabled) {
                 // location service disabled
             } else {
-                canGetLocation = true;
 
                 if (isGPSEnabled) {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES,this);
                     location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                     updateGPSCoordinates(location);
                 }
-
                 if (isNetworkEnabled) {
                     if (location == null) {
-                        locationManager.requestLocationUpdates(
-                                LocationManager.NETWORK_PROVIDER,
-                                MIN_TIME_BW_UPDATES,
-                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES,this);
                         location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                         updateGPSCoordinates(location);
                     }
@@ -80,7 +74,6 @@ public class GPSTracker extends Service implements LocationListener {
         } catch (Exception e) {
             Log.e("Error : Location","Impossible to connect to LocationManager", e);
         }
-        return location;
     }
 
     public void updateGPSCoordinates(Location location) {
@@ -90,10 +83,7 @@ public class GPSTracker extends Service implements LocationListener {
         }
     }
 
-    public boolean canGetLocation() {
-        return canGetLocation;
-    }
-
+    @Override
     public void onLocationChanged(Location location) {
         updateGPSCoordinates(location);
     }
@@ -104,8 +94,26 @@ public class GPSTracker extends Service implements LocationListener {
     public void onProviderEnabled(String provider) {
     }
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        getLocation();
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        getLocation();
+        mBinder = new LocationBinder();
+        return mBinder;
+    }
+
+    public void stopLocationService() {
+        stopSelf();
     }
 
     @Override
@@ -113,7 +121,11 @@ public class GPSTracker extends Service implements LocationListener {
 
     }
 
-    private boolean isPermissionGranted() {
-        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+
+
+    public class LocationBinder extends Binder {
+        public LocationService getLocationService() {
+            return LocationService.this;
+        }
     }
 }

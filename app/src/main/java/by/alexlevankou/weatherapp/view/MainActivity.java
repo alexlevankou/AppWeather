@@ -4,17 +4,22 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,16 +29,24 @@ import java.util.Map;
 
 import by.alexlevankou.weatherapp.R;
 import by.alexlevankou.weatherapp.model.WeatherData;
+import by.alexlevankou.weatherapp.service.LocationService;
 import by.alexlevankou.weatherapp.viewmodel.WeatherViewModel;
 
 
 public class MainActivity extends AppCompatActivity implements LocationListener {
 
+    final String LOG_LOCATION = "LocationLogs";
+
+    private Intent mIntent;
+    private ServiceConnection mServiceConn;
+    private LocationService mLocationService;
+    boolean bound = false;
+
+    ////////////////////////////////////////////////////////////////////////////////////
+    private SwipeRefreshLayout swipeRefresher;
     private LocationManager mLocationManager = null;
     private Location mLocation;
     private WeatherViewModel mViewModel;
-    //private GPSTrackerTrackerService;
-    private SwipeRefreshLayout swipeRefresher;
 
     private TextView city;
     private ImageView weatherImage;
@@ -100,12 +113,42 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         mViewModel = ViewModelProviders.of(this).get(WeatherViewModel.class);
         mViewModel.init();
 
-        getLocation();
+        //getLocation();
+
+        mIntent = new Intent(this, LocationService.class);
+        mServiceConn = new ServiceConnection() {
+
+            public void onServiceConnected(ComponentName name, IBinder binder) {
+                Log.d(LOG_LOCATION, "MainActivity onServiceConnected");
+                mLocationService = ((LocationService.LocationBinder) binder).getLocationService();
+                getLocation();
+                bound = true;
+            }
+
+            public void onServiceDisconnected(ComponentName name) {
+                Log.d(LOG_LOCATION, "MainActivity onServiceDisconnected");
+                bound = false;
+            }
+        };
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        bindService(mIntent, mServiceConn, 0);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (!bound) return;
+        unbindService(mServiceConn);
+        bound = false;
     }
 
     private void getLocation() {
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            requestLocation();
+            mLocationService.requestLocation();
         } else {
             if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 Toast.makeText(this, R.string.permission_request, Toast.LENGTH_SHORT).show();
@@ -119,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE_PERMISSION_ACCESS_LOCATION) {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLocation();
+                mLocationService.requestLocation();
             } else {
                 Toast.makeText(this, R.string.permission_decline, Toast.LENGTH_SHORT).show();
             }
@@ -128,19 +171,19 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private void requestLocation()
-    {
-        if(mLocationManager == null)
-        {
-            mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        }
-        if(mLocationManager != null)
-        {
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        }
-    }
+//    @SuppressLint("MissingPermission")
+//    private void requestLocation()
+//    {
+//        if(mLocationManager == null)
+//        {
+//            mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+//        }
+//        if(mLocationManager != null)
+//        {
+//            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+//            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+//        }
+//    }
 
     @Override
     public void onProviderDisabled(String provider) {}
