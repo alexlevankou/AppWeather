@@ -4,19 +4,23 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -37,10 +41,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
 
     final String LOG_LOCATION = "LocationLogs";
 
+    LocationBroadcastReceiver locationBroadcastReceiver;
+
     private Intent mIntent;
     private ServiceConnection mServiceConn;
     private LocationService mLocationService;
     boolean bound = false;
+
+    public final static String BROADCAST_ACTION = "by.alexlevankou.weatherapp.locationservicebroadcast";
 
     ////////////////////////////////////////////////////////////////////////////////////
     private SwipeRefreshLayout swipeRefresher;
@@ -91,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        locationBroadcastReceiver = new LocationBroadcastReceiver();
+
         swipeRefresher = findViewById(R.id.swipeRefresher);
         swipeRefresher.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -135,7 +145,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     protected void onStart() {
         super.onStart();
-        bindService(mIntent, mServiceConn, 0);
+        bindService(mIntent, mServiceConn, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        filter.addAction(BROADCAST_ACTION);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(locationBroadcastReceiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(locationBroadcastReceiver);
     }
 
     @Override
@@ -191,9 +215,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     @Override
     public void onProviderEnabled(String provider) {}
 
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+    @Override
     public void onLocationChanged(Location location) {
         mLocation = location;
-        mViewModel.getWeatherByCoordinates(mLocation.getLatitude(), mLocation.getLongitude()).observe(this, new Observer<WeatherData>() {
+        getWeather(mLocation.getLatitude(), mLocation.getLongitude());
+    }
+
+    private void getWeather(double latitude, double longitude) {
+        mViewModel.getWeatherByCoordinates(latitude, longitude).observe(this, new Observer<WeatherData>() {
             @Override
             public void onChanged(@Nullable WeatherData weatherData) {
 
@@ -213,6 +245,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         });
     }
 
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {}
+    public class LocationBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            double latitude = intent.getExtras().getDouble("latitude");
+            double longitude = intent.getExtras().getDouble("longitude");
+            getWeather(latitude, longitude);
+        }
+    }
 }

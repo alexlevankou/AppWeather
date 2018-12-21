@@ -12,18 +12,15 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import by.alexlevankou.weatherapp.R;
+import by.alexlevankou.weatherapp.view.MainActivity;
 
 public class LocationService extends Service implements LocationListener {
 
-    //private final Context mContext;
     IBinder mBinder;
-
-    boolean isGPSEnabled = false;
-    boolean isNetworkEnabled = false;
-    Location location = null;
 
     double latitude = 0;
     double longitude = 0;
@@ -33,10 +30,6 @@ public class LocationService extends Service implements LocationListener {
     // The minimum time beetwen updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 10000;
 
-    //public LocationService(Context context) {
-    //    this.mContext = context;
-    //}
-
     public void getLocation() {
         if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             requestLocation();
@@ -45,6 +38,9 @@ public class LocationService extends Service implements LocationListener {
 
     public void requestLocation() {
         try {
+
+            boolean isGPSEnabled = false;
+            boolean isNetworkEnabled = false;
             LocationManager locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
 
             if(locationManager != null) {
@@ -58,18 +54,18 @@ public class LocationService extends Service implements LocationListener {
                 // location service disabled
             } else {
 
+                Location location = null;
                 if (isGPSEnabled) {
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES,this);
                     location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    updateGPSCoordinates(location);
                 }
                 if (isNetworkEnabled) {
                     if (location == null) {
                         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES,this);
                         location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        updateGPSCoordinates(location);
                     }
                 }
+                updateGPSCoordinates(location);
             }
         } catch (Exception e) {
             Log.e("Error : Location","Impossible to connect to LocationManager", e);
@@ -80,6 +76,11 @@ public class LocationService extends Service implements LocationListener {
         if (location != null) {
             latitude = location.getLatitude();
             longitude = location.getLongitude();
+            Intent intent = new Intent();
+            intent.setAction(MainActivity.BROADCAST_ACTION);
+            intent.putExtra("latitude", latitude);
+            intent.putExtra("longitude", longitude);
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
     }
 
@@ -112,15 +113,10 @@ public class LocationService extends Service implements LocationListener {
         return mBinder;
     }
 
-    public void stopLocationService() {
-        stopSelf();
-    }
-
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
 
     }
-
 
 
     public class LocationBinder extends Binder {
