@@ -1,7 +1,8 @@
 package by.alexlevankou.weatherapp.view;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
@@ -10,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -17,6 +19,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -31,8 +34,10 @@ import android.widget.Toast;
 import java.util.HashMap;
 import java.util.Map;
 
+import by.alexlevankou.weatherapp.Constants;
 import by.alexlevankou.weatherapp.R;
 import by.alexlevankou.weatherapp.model.WeatherData;
+import by.alexlevankou.weatherapp.service.BootReceiver;
 import by.alexlevankou.weatherapp.service.LocationService;
 import by.alexlevankou.weatherapp.viewmodel.WeatherViewModel;
 
@@ -49,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     boolean bound = false;
 
     public final static String BROADCAST_ACTION = "by.alexlevankou.weatherapp.locationservicebroadcast";
+
+    private SharedPreferences mSharedPref;
 
     ////////////////////////////////////////////////////////////////////////////////////
     private SwipeRefreshLayout swipeRefresher;
@@ -123,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         mViewModel = ViewModelProviders.of(this).get(WeatherViewModel.class);
         mViewModel.init();
 
+
         //getLocation();
 
         mIntent = new Intent(this, LocationService.class);
@@ -186,6 +194,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE_PERMISSION_ACCESS_LOCATION) {
             if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //mSharedPref = getSharedPreferences(getString(R.string.applicationID), MODE_PRIVATE);
+                //if (mSharedPref.getBoolean("firstrun", true)) {
+                AlarmManager alarmManager = (AlarmManager) this.getSystemService(ALARM_SERVICE);
+                Intent serviceIntent = new Intent(this, LocationService.class);
+                PendingIntent pIntent = PendingIntent.getService(this, 0, serviceIntent, 0);
+                alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + Constants.SECOND, 3 * Constants.HOUR, pIntent);
+                //}
                 mLocationService.requestLocation();
             } else {
                 Toast.makeText(this, R.string.permission_decline, Toast.LENGTH_SHORT).show();

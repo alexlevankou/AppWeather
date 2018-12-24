@@ -2,7 +2,7 @@ package by.alexlevankou.weatherapp.service;
 
 import android.Manifest;
 import android.app.Service;
-import android.content.Context;
+import android.arch.lifecycle.LiveData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,7 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import by.alexlevankou.weatherapp.R;
+import by.alexlevankou.weatherapp.repository.Repository;
 import by.alexlevankou.weatherapp.view.MainActivity;
 
 public class LocationService extends Service implements LocationListener {
@@ -76,6 +76,9 @@ public class LocationService extends Service implements LocationListener {
         if (location != null) {
             latitude = location.getLatitude();
             longitude = location.getLongitude();
+            //Repository repo = new Repository();
+            //LiveDatarepo.getWeather(latitude, longitude);
+
             Intent intent = new Intent();
             intent.setAction(MainActivity.BROADCAST_ACTION);
             intent.putExtra("latitude", latitude);

@@ -21,18 +21,41 @@ public class WeatherViewModel extends ViewModel {
     }
 
     public LiveData<WeatherData> getWeatherByCity(String city) {
-        if (data == null) {
+        if(data == null){
             data = new MutableLiveData<>();
-            // call by city
         }
+        // call by city
         return data;
     }
 
     public LiveData<WeatherData> getWeatherByCoordinates(double latitude, double longitude) {
-        if (data == null) {
+        if(data == null) {
             data = new MutableLiveData<>();
-            data = repo.getWeather(latitude, longitude);
         }
+        Runnable r = new ApiRequestRunnable(latitude, longitude);
+        new Thread(r).start();
         return data;
+    }
+
+    public class ApiRequestRunnable implements Runnable {
+
+        private LiveData<WeatherData> mData;
+
+        double mLatitude = 0;
+        double mLongitude = 0;
+
+        ApiRequestRunnable(double latitude, double longitude) {
+            mData = data;
+            mLatitude = latitude;
+            mLongitude = longitude;
+        }
+
+        public void run() {
+            data = repo.getWeather(mLatitude, mLongitude);
+        }
+
+        public LiveData<WeatherData> getData(){
+            return mData;
+        }
     }
 }
